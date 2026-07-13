@@ -1,0 +1,25 @@
+print("Welcome!")
+print("If you want to exit just say 'bye'")
+
+responses={
+    "hello":"Hi there , How can I help you",
+    "hi":"Hey, How can I help you",
+    "hey":"Hello, How can I help you",
+    "how are you":"I am Good. What can I help you with today",
+    "help":"Yes I am here. Tell me how can I help you ",
+    "good morning":"Good Morning! What can I help you with today",
+    "good night":"Good Night! Sweet Dreams",
+    "thanks":"No Problem, My Pleasure"
+}
+
+while True:
+    user_input=input().lower().strip()
+    if user_input=="bye":
+        print("Goodbye! Take Care")
+        break
+    curr_response=responses.get(user_input)
+
+    if curr_response:
+        print(curr_response)
+    else:
+        print("Sorry, I did not Understand")   
