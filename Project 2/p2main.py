@@ -1,0 +1,109 @@
+import pandas as pd
+
+data = pd.read_csv("dataset.csv")
+
+print(data.shape)
+data.info()
+print(data['OrderStatus'].value_counts())
+
+data = data.drop(
+    [
+        "OrderID",
+        "CustomerID",
+        "ShippingAddress",
+        "TrackingNumber",
+        "Date"
+    ],
+    axis=1
+)
+
+data["CouponCode"] = data["CouponCode"].fillna("NoCoupon")
+
+data = pd.get_dummies(
+    data,
+    columns=[
+        "Product",
+        "PaymentMethod",
+        "CouponCode",
+        "ReferralSource"
+    ]
+)
+
+from sklearn.preprocessing import LabelEncoder
+
+encoder = LabelEncoder()
+data["OrderStatus"] = encoder.fit_transform(data["OrderStatus"])
+
+
+X = data.drop("OrderStatus", axis=1)
+y = data["OrderStatus"]
+
+print("Features:")
+print(X.head())
+
+print("\nTarget:")
+print(y.head())
+
+
+from sklearn.model_selection import train_test_split
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.2,
+    random_state=42
+)
+print("Training Data:")
+print(X_train.shape)
+
+print("Testing Data:")
+print(X_test.shape)
+
+
+from sklearn.preprocessing import StandardScaler
+
+scaler = StandardScaler()
+
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+print("Feature Scaling Completed!")
+
+
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score
+
+print("\nTesting Different K Values:\n")
+
+best_k = 0
+best_accuracy = 0
+
+for k in range(1, 21):
+
+    model = KNeighborsClassifier(n_neighbors=k)
+    model.fit(X_train, y_train)
+
+    y_pred = model.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred)
+
+    print(f"K = {k:2d}  -->  Accuracy = {accuracy:.4f}")
+
+    if accuracy > best_accuracy:
+        best_accuracy = accuracy
+        best_k = k
+
+print(f"Best K Value : {best_k}")
+print(f"Best Accuracy: {best_accuracy:.4f}")
+
+
+
+from sklearn.metrics import confusion_matrix, classification_report
+
+final_model = KNeighborsClassifier(n_neighbors=best_k)
+final_model.fit(X_train, y_train)
+y_final_pred = final_model.predict(X_test)
+
+print("\nConfusion Matrix:")
+print(confusion_matrix(y_test, y_final_pred))
+print("\nClassification Report (Precision, Recall, F1):")
+print(classification_report(y_test, y_final_pred, target_names=encoder.classes_))
